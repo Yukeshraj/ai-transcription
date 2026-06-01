@@ -50,6 +50,8 @@ app.use(cors({
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
 }));
+app.options("*", cors()); // ← add this line
+app.use(express.json({ limit: "10kb" }));
 // ─── Socket.IO ────────────────────────────────────────────────────────────
 
 const io = new SocketIOServer(httpServer, {
