@@ -99,7 +99,7 @@ async function callAgent(history) {
         content: e.text,
       })),
     ];
-    const res = await fetch("http://localhost:3001/api/agent", {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || "http://localhost:3001"}/api/agent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messages }),
