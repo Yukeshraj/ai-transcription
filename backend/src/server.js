@@ -32,32 +32,42 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000",
-  "https://ai-transcription-i5c66va49-yukeshs-projects-dc2846cf.vercel.app",
-  "https://ai-transcription-git-main-yukeshs-projects-dc2846cf.vercel.app",
-  ...(process.env.ALLOWED_ORIGINS?.split(",") || []),
 ];
 
-// ─── Middleware ────────────────────────────────────────────────────────────
-
 app.use(cors({
-  origin: ALLOWED_ORIGINS,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      ALLOWED_ORIGINS.includes(origin) ||
+      origin.endsWith(".vercel.app") ||
+      origin === "https://ai-transcription-iota.vercel.app"
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
 }));
-app.use(express.json({ limit: "10kb" }));
-
 // ─── Socket.IO ────────────────────────────────────────────────────────────
 
 const io = new SocketIOServer(httpServer, {
   cors: {
-    origin: ALLOWED_ORIGINS,
+    origin: (origin, callback) => {
+      if (!origin || origin.endsWith(".vercel.app") || ALLOWED_ORIGINS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST"],
     credentials: true,
   },
   transports: ["websocket", "polling"],
   pingTimeout: 60000,
   pingInterval: 25000,
-  maxHttpBufferSize: 5e6, // 5MB — needed for raw audio chunks
+  maxHttpBufferSize: 5e6,
 });
 
 // ─── Service Initialization ────────────────────────────────────────────────
